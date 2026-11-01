@@ -1,5 +1,5 @@
 {
-  "name": "@quartz-community/folder-page",
+  "name": "@functionalstoic/folder-page",
   "version": "0.1.0",
   "description": "Folder page type plugin for Quartz.",
   "type": "module",
