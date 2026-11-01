@@ -112,6 +112,20 @@ export function pagesFromAllFiles(
   return directChildren;
 }
 
+/**
+ * Reads a folder index's `folderListing` frontmatter value.
+ * A positive number caps the automatic listing at that many pages; `none` hides it.
+ * Anything else (including a missing key) leaves the listing unchanged.
+ */
+export function parseFolderListing(value: unknown): { hide: boolean; limit?: number } {
+  if (typeof value === "string" && value.trim().toLowerCase() === "none") {
+    return { hide: true };
+  }
+  if (typeof value !== "number" && typeof value !== "string") return { hide: false };
+  const n = Math.floor(Number(value));
+  return Number.isFinite(n) && n > 0 ? { hide: false, limit: n } : { hide: false };
+}
+
 function mostRecentDatesFromChildren(children: TrieNode[]): PageEntry["dates"] {
   let maybeDates: PageEntry["dates"] | undefined;
   for (const child of children) {
@@ -168,14 +182,17 @@ export default ((opts?: Partial<FolderContentOptions>) => {
       allPagesInFolder = pagesFromAllFiles(allFiles ?? [], slug, options.showSubfolders);
     }
 
-    const cssClasses =
-      ((fileData as { frontmatter?: { cssclasses?: string[] } } | undefined)?.frontmatter
-        ?.cssclasses as string[] | undefined) ?? [];
+    const frontmatter = (
+      fileData as { frontmatter?: { cssclasses?: string[]; folderListing?: unknown } } | undefined
+    )?.frontmatter;
+    const cssClasses = (frontmatter?.cssclasses as string[] | undefined) ?? [];
     const classes = cssClasses.join(" ");
+    const listing = parseFolderListing(frontmatter?.folderListing);
     const listProps = {
       ...props,
       sort: options.sort,
       allFiles: allPagesInFolder,
+      limit: listing.limit,
     };
 
     const hastRoot = tree as Root;
@@ -191,18 +208,27 @@ export default ((opts?: Partial<FolderContentOptions>) => {
         <article class={classes}>
           <div class="markdown-preview-view markdown-rendered">{content}</div>
         </article>
-        <div class="page-listing">
-          {options.showFolderCount && (
-            <p>
-              {i18n(
-                (cfg as { locale?: string } | undefined)?.locale ?? "en-US",
-              ).pages.folderContent.itemsUnderFolder({
-                count: allPagesInFolder.length,
-              })}
-            </p>
-          )}
-          <div>{pageListContent}</div>
-        </div>
+        {!listing.hide && (
+          <div class="page-listing">
+            {listing.limit !== undefined ? (
+              <h2>
+                Latest {Math.min(listing.limit, allPagesInFolder.length)} of{" "}
+                {allPagesInFolder.length}
+              </h2>
+            ) : (
+              options.showFolderCount && (
+                <p>
+                  {i18n(
+                    (cfg as { locale?: string } | undefined)?.locale ?? "en-US",
+                  ).pages.folderContent.itemsUnderFolder({
+                    count: allPagesInFolder.length,
+                  })}
+                </p>
+              )
+            )}
+            <div>{pageListContent}</div>
+          </div>
+        )}
       </div>
     );
   };

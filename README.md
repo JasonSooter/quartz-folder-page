@@ -1,4 +1,6 @@
-# @quartz-community/folder-page
+# @functionalstoic/folder-page
+
+Fork of [quartz-community/folder-page](https://github.com/quartz-community/folder-page) that lets a folder's `index.md` cap or hide the automatic page listing (see [Per-folder listing](#per-folder-listing)). Otherwise unchanged.
 
 Renders folder index pages showing a listing of all pages within that folder. Automatically generates virtual index pages for folders that don't have one.
 
@@ -36,6 +38,17 @@ ExternalPlugin.FolderPage({
 | `showSubfolders`  | `boolean` | `undefined` | Whether to show subfolders in the listing.                                             |
 | `sort`            | `SortFn`  | `undefined` | A function to sort the pages in the folder.                                            |
 | `prefixFolders`   | `boolean` | `false`     | Whether to prefix generated folder page titles with "Folder: " (e.g. "Folder: notes"). |
+
+## Per-folder listing
+
+A folder's `index.md` can control the automatic listing under its own content with one frontmatter key:
+
+```yaml title="Places/index.md"
+folderListing: 25 # show only the first 25 pages in the listing's sort order, under a "Latest 25 of N" heading
+# folderListing: none   # hide the listing entirely
+```
+
+Without the key, the folder page is unchanged. Values other than a positive number or `none` are ignored.
 
 ## Documentation
 
