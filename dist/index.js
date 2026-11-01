@@ -2809,7 +2809,7 @@ var FolderContent_default = ((opts) => {
     };
     const hastRoot = tree;
     const content = hastRoot.children.length === 0 ? fileData?.description : htmlToJsx(hastRoot);
-    const pageListContent = PageList(listProps);
+    const pageListContent = listing.hide ? null : PageList(listProps);
     return /* @__PURE__ */ u2("div", { class: "popover-hint", children: [
       /* @__PURE__ */ u2("article", { class: classes, children: /* @__PURE__ */ u2("div", { class: "markdown-preview-view markdown-rendered", children: content }) }),
       !listing.hide && /* @__PURE__ */ u2("div", { class: "page-listing", children: [

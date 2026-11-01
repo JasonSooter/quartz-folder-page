@@ -201,7 +201,11 @@ export default ((opts?: Partial<FolderContentOptions>) => {
         ? (fileData as { description?: unknown } | undefined)?.description
         : htmlToJsx(hastRoot);
 
-    const pageListContent = PageList(listProps) as unknown as ComponentChildren;
+    // Built only when shown: `folderListing: none` on a large folder would otherwise
+    // sort and render every row just to discard it.
+    const pageListContent = listing.hide
+      ? null
+      : (PageList(listProps) as unknown as ComponentChildren);
 
     return (
       <div class="popover-hint">
