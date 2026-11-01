@@ -2754,6 +2754,14 @@ function pagesFromAllFiles(allFiles, folderSlug, showSubfolders) {
   }
   return directChildren;
 }
+function parseFolderListing(value) {
+  if (typeof value === "string" && value.trim().toLowerCase() === "none") {
+    return { hide: true };
+  }
+  if (typeof value !== "number" && typeof value !== "string") return { hide: false };
+  const n2 = Math.floor(Number(value));
+  return Number.isFinite(n2) && n2 > 0 ? { hide: false, limit: n2 } : { hide: false };
+}
 function mostRecentDatesFromChildren(children) {
   let maybeDates;
   for (const child of children) {
@@ -2803,20 +2811,29 @@ var FolderContent_default = ((opts) => {
     } else {
       allPagesInFolder = pagesFromAllFiles(allFiles ?? [], slug2, options.showSubfolders);
     }
-    const cssClasses = fileData?.frontmatter?.cssclasses ?? [];
+    const frontmatter = fileData?.frontmatter;
+    const cssClasses = frontmatter?.cssclasses ?? [];
     const classes = cssClasses.join(" ");
+    const listing = parseFolderListing(frontmatter?.folderListing);
     const listProps = {
       ...props,
       sort: options.sort,
-      allFiles: allPagesInFolder
+      allFiles: allPagesInFolder,
+      limit: listing.limit
     };
     const hastRoot = tree;
     const content = hastRoot.children.length === 0 ? fileData?.description : htmlToJsx(hastRoot);
     const pageListContent = PageList(listProps);
     return /* @__PURE__ */ u2("div", { class: "popover-hint", children: [
       /* @__PURE__ */ u2("article", { class: classes, children: /* @__PURE__ */ u2("div", { class: "markdown-preview-view markdown-rendered", children: content }) }),
-      /* @__PURE__ */ u2("div", { class: "page-listing", children: [
-        options.showFolderCount && /* @__PURE__ */ u2("p", { children: i18n(
+      !listing.hide && /* @__PURE__ */ u2("div", { class: "page-listing", children: [
+        listing.limit !== void 0 ? /* @__PURE__ */ u2("h2", { children: [
+          "Latest ",
+          Math.min(listing.limit, allPagesInFolder.length),
+          " of",
+          " ",
+          allPagesInFolder.length
+        ] }) : options.showFolderCount && /* @__PURE__ */ u2("p", { children: i18n(
           cfg?.locale ?? "en-US"
         ).pages.folderContent.itemsUnderFolder({
           count: allPagesInFolder.length

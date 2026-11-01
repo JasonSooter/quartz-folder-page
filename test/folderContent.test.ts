@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { pagesFromAllFiles } from "../src/components/FolderContent";
+import { pagesFromAllFiles, parseFolderListing } from "../src/components/FolderContent";
 
 describe("pagesFromAllFiles", () => {
   it("returns direct children of the requested folder", () => {
@@ -49,5 +49,25 @@ describe("pagesFromAllFiles", () => {
     ];
     const result = pagesFromAllFiles(allFiles, "notes/index", true);
     expect(result.map((r) => r.slug)).toEqual(["notes/page"]);
+  });
+});
+
+describe("parseFolderListing", () => {
+  it("caps the listing at a positive number, given as a number or a string", () => {
+    expect(parseFolderListing(25)).toEqual({ hide: false, limit: 25 });
+    expect(parseFolderListing("25")).toEqual({ hide: false, limit: 25 });
+    expect(parseFolderListing(" 10 ")).toEqual({ hide: false, limit: 10 });
+    expect(parseFolderListing(2.9)).toEqual({ hide: false, limit: 2 });
+  });
+
+  it("hides the listing for none, in any case", () => {
+    expect(parseFolderListing("none")).toEqual({ hide: true });
+    expect(parseFolderListing(" None ")).toEqual({ hide: true });
+  });
+
+  it("leaves the listing unchanged when the key is absent or not usable", () => {
+    for (const value of [undefined, null, "", "all", 0, -5, Number.NaN, Infinity, true, {}, []]) {
+      expect(parseFolderListing(value)).toEqual({ hide: false });
+    }
   });
 });
