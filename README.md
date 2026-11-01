@@ -7,14 +7,14 @@ Renders folder index pages showing a listing of all pages within that folder. Au
 ## Installation
 
 ```bash
-npx quartz plugin add github:quartz-community/folder-page
+npx quartz plugin add github:JasonSooter/quartz-folder-page
 ```
 
 ## Usage
 
 ```yaml title="quartz.config.yaml"
 plugins:
-  - source: github:quartz-community/folder-page
+  - source: github:JasonSooter/quartz-folder-page
     enabled: true
 ```
 
@@ -49,6 +49,8 @@ folderListing: 25 # show only the first 25 pages in the listing's sort order, un
 ```
 
 Without the key, the folder page is unchanged. Values other than a positive number or `none` are ignored.
+
+The "Latest N of M" heading is English only; the plugin's other strings follow `locale`.
 
 ## Documentation
 
