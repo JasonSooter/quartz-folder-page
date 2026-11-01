@@ -1,268 +1,10 @@
 import path from 'path';
 
-var __create = Object.create;
 var __defProp = Object.defineProperty;
-var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __getOwnPropNames = Object.getOwnPropertyNames;
-var __getProtoOf = Object.getPrototypeOf;
-var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __commonJS = (cb, mod) => function __require() {
-  return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
-};
 var __export = (target, all) => {
   for (var name2 in all)
     __defProp(target, name2, { get: all[name2], enumerable: true });
 };
-var __copyProps = (to, from, except, desc) => {
-  if (from && typeof from === "object" || typeof from === "function") {
-    for (let key of __getOwnPropNames(from))
-      if (!__hasOwnProp.call(to, key) && key !== except)
-        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
-  }
-  return to;
-};
-var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
-  // If the importer is in node compatibility mode or this is not an ESM
-  // file that has been converted to a CommonJS file using a Babel-
-  // compatible transform (i.e. "__esModule" has not been set), then set
-  // "default" to the CommonJS "module.exports" for node compatibility.
-  __defProp(target, "default", { value: mod, enumerable: true }) ,
-  mod
-));
-
-// node_modules/inline-style-parser/cjs/index.js
-var require_cjs = __commonJS({
-  "node_modules/inline-style-parser/cjs/index.js"(exports$1, module) {
-    var COMMENT_REGEX = /\/\*[^*]*\*+([^/*][^*]*\*+)*\//g;
-    var NEWLINE_REGEX = /\n/g;
-    var WHITESPACE_REGEX = /^\s*/;
-    var PROPERTY_REGEX = /^(\*?[-#/*\\\w]+(\[[0-9a-z_-]+\])?)\s*/;
-    var COLON_REGEX = /^:\s*/;
-    var VALUE_REGEX = /^((?:'(?:\\'|.)*?'|"(?:\\"|.)*?"|\([^)]*?\)|[^};])+)/;
-    var SEMICOLON_REGEX = /^[;\s]*/;
-    var TRIM_REGEX = /^\s+|\s+$/g;
-    var NEWLINE = "\n";
-    var FORWARD_SLASH = "/";
-    var ASTERISK = "*";
-    var EMPTY_STRING = "";
-    var TYPE_COMMENT = "comment";
-    var TYPE_DECLARATION = "declaration";
-    function index2(style, options) {
-      if (typeof style !== "string") {
-        throw new TypeError("First argument must be a string");
-      }
-      if (!style) return [];
-      options = options || {};
-      var lineno = 1;
-      var column = 1;
-      function updatePosition(str) {
-        var lines = str.match(NEWLINE_REGEX);
-        if (lines) lineno += lines.length;
-        var i2 = str.lastIndexOf(NEWLINE);
-        column = ~i2 ? str.length - i2 : column + str.length;
-      }
-      function position3() {
-        var start2 = { line: lineno, column };
-        return function(node) {
-          node.position = new Position(start2);
-          whitespace2();
-          return node;
-        };
-      }
-      function Position(start2) {
-        this.start = start2;
-        this.end = { line: lineno, column };
-        this.source = options.source;
-      }
-      Position.prototype.content = style;
-      function error(msg) {
-        var err = new Error(
-          options.source + ":" + lineno + ":" + column + ": " + msg
-        );
-        err.reason = msg;
-        err.filename = options.source;
-        err.line = lineno;
-        err.column = column;
-        err.source = style;
-        if (options.silent) ;
-        else {
-          throw err;
-        }
-      }
-      function match(re2) {
-        var m2 = re2.exec(style);
-        if (!m2) return;
-        var str = m2[0];
-        updatePosition(str);
-        style = style.slice(str.length);
-        return m2;
-      }
-      function whitespace2() {
-        match(WHITESPACE_REGEX);
-      }
-      function comments(rules) {
-        var c2;
-        rules = rules || [];
-        while (c2 = comment()) {
-          if (c2 !== false) {
-            rules.push(c2);
-          }
-        }
-        return rules;
-      }
-      function comment() {
-        var pos = position3();
-        if (FORWARD_SLASH != style.charAt(0) || ASTERISK != style.charAt(1)) return;
-        var i2 = 2;
-        while (EMPTY_STRING != style.charAt(i2) && (ASTERISK != style.charAt(i2) || FORWARD_SLASH != style.charAt(i2 + 1))) {
-          ++i2;
-        }
-        i2 += 2;
-        if (EMPTY_STRING === style.charAt(i2 - 1)) {
-          return error("End of comment missing");
-        }
-        var str = style.slice(2, i2 - 2);
-        column += 2;
-        updatePosition(str);
-        style = style.slice(i2);
-        column += 2;
-        return pos({
-          type: TYPE_COMMENT,
-          comment: str
-        });
-      }
-      function declaration() {
-        var pos = position3();
-        var prop = match(PROPERTY_REGEX);
-        if (!prop) return;
-        comment();
-        if (!match(COLON_REGEX)) return error("property missing ':'");
-        var val = match(VALUE_REGEX);
-        var ret = pos({
-          type: TYPE_DECLARATION,
-          property: trim(prop[0].replace(COMMENT_REGEX, EMPTY_STRING)),
-          value: val ? trim(val[0].replace(COMMENT_REGEX, EMPTY_STRING)) : EMPTY_STRING
-        });
-        match(SEMICOLON_REGEX);
-        return ret;
-      }
-      function declarations() {
-        var decls = [];
-        comments(decls);
-        var decl;
-        while (decl = declaration()) {
-          if (decl !== false) {
-            decls.push(decl);
-            comments(decls);
-          }
-        }
-        return decls;
-      }
-      whitespace2();
-      return declarations();
-    }
-    function trim(str) {
-      return str ? str.replace(TRIM_REGEX, EMPTY_STRING) : EMPTY_STRING;
-    }
-    module.exports = index2;
-  }
-});
-
-// node_modules/style-to-object/cjs/index.js
-var require_cjs2 = __commonJS({
-  "node_modules/style-to-object/cjs/index.js"(exports$1) {
-    var __importDefault = exports$1 && exports$1.__importDefault || function(mod) {
-      return mod && mod.__esModule ? mod : { "default": mod };
-    };
-    Object.defineProperty(exports$1, "__esModule", { value: true });
-    exports$1.default = StyleToObject;
-    var inline_style_parser_1 = __importDefault(require_cjs());
-    function StyleToObject(style, iterator) {
-      let styleObject = null;
-      if (!style || typeof style !== "string") {
-        return styleObject;
-      }
-      const declarations = (0, inline_style_parser_1.default)(style);
-      const hasIterator = typeof iterator === "function";
-      declarations.forEach((declaration) => {
-        if (declaration.type !== "declaration") {
-          return;
-        }
-        const { property, value } = declaration;
-        if (hasIterator) {
-          iterator(property, value, declaration);
-        } else if (value) {
-          styleObject = styleObject || {};
-          styleObject[property] = value;
-        }
-      });
-      return styleObject;
-    }
-  }
-});
-
-// node_modules/style-to-js/cjs/utilities.js
-var require_utilities = __commonJS({
-  "node_modules/style-to-js/cjs/utilities.js"(exports$1) {
-    Object.defineProperty(exports$1, "__esModule", { value: true });
-    exports$1.camelCase = void 0;
-    var CUSTOM_PROPERTY_REGEX = /^--[a-zA-Z0-9_-]+$/;
-    var HYPHEN_REGEX = /-([a-z])/g;
-    var NO_HYPHEN_REGEX = /^[^-]+$/;
-    var VENDOR_PREFIX_REGEX = /^-(webkit|moz|ms|o|khtml)-/;
-    var MS_VENDOR_PREFIX_REGEX = /^-(ms)-/;
-    var skipCamelCase = function(property) {
-      return !property || NO_HYPHEN_REGEX.test(property) || CUSTOM_PROPERTY_REGEX.test(property);
-    };
-    var capitalize = function(match, character) {
-      return character.toUpperCase();
-    };
-    var trimHyphen = function(match, prefix) {
-      return "".concat(prefix, "-");
-    };
-    var camelCase = function(property, options) {
-      if (options === void 0) {
-        options = {};
-      }
-      if (skipCamelCase(property)) {
-        return property;
-      }
-      property = property.toLowerCase();
-      if (options.reactCompat) {
-        property = property.replace(MS_VENDOR_PREFIX_REGEX, trimHyphen);
-      } else {
-        property = property.replace(VENDOR_PREFIX_REGEX, trimHyphen);
-      }
-      return property.replace(HYPHEN_REGEX, capitalize);
-    };
-    exports$1.camelCase = camelCase;
-  }
-});
-
-// node_modules/style-to-js/cjs/index.js
-var require_cjs3 = __commonJS({
-  "node_modules/style-to-js/cjs/index.js"(exports$1, module) {
-    var __importDefault = exports$1 && exports$1.__importDefault || function(mod) {
-      return mod && mod.__esModule ? mod : { "default": mod };
-    };
-    var style_to_object_1 = __importDefault(require_cjs2());
-    var utilities_1 = require_utilities();
-    function StyleToJS(style, options) {
-      var output = {};
-      if (!style || typeof style !== "string") {
-        return output;
-      }
-      (0, style_to_object_1.default)(style, function(property, value) {
-        if (property && value) {
-          output[(0, utilities_1.camelCase)(property, options)] = value;
-        }
-      });
-      return output;
-    }
-    StyleToJS.default = StyleToJS;
-    module.exports = StyleToJS;
-  }
-});
 
 // node_modules/@quartz-community/utils/dist/sort.js
 function getDate(data) {
@@ -590,13 +332,13 @@ var DefinedInfo = class extends Info {
    *   Info.
    */
   constructor(property, attribute, mask, space) {
-    let index2 = -1;
+    let index3 = -1;
     super(property, attribute);
     mark(this, "space", space);
     if (typeof mask === "number") {
-      while (++index2 < checks.length) {
-        const check = checks[index2];
-        mark(this, checks[index2], (mask & types_exports[check]) === types_exports[check]);
+      while (++index3 < checks.length) {
+        const check = checks[index3];
+        mark(this, checks[index3], (mask & types_exports[check]) === types_exports[check]);
       }
     }
   }
@@ -1723,8 +1465,147 @@ function stringify2(values) {
   return values.join(" ").trim();
 }
 
-// node_modules/hast-util-to-jsx-runtime/lib/index.js
-var import_style_to_js = __toESM(require_cjs3());
+// node_modules/hast-util-to-jsx-runtime/node_modules/inline-style-parser/esm/index.mjs
+var COMMENT_REGEX = /\/\*(?:[^*]|\*(?!\/))*\*\//g;
+var NEWLINE_REGEX = /\n/g;
+var WHITESPACE_REGEX = /^\s*/;
+var PROPERTY_REGEX = /^(\*?[-#/*\\\w]+(\[[0-9a-z_-]+\])?)\s*/;
+var COLON_REGEX = /^:\s*/;
+var VALUE_REGEX = /^((?:'(?:\\.|[^'\\])*'|"(?:\\.|[^"\\])*"|url\((?:'(?:\\.|[^'\\])*'|"(?:\\.|[^"\\])*"|[^)]*)\)|[^};])+)/;
+var SEMICOLON_REGEX = /^[;\s]*/;
+var NEWLINE = "\n";
+var FORWARD_SLASH = "/";
+var ASTERISK = "*";
+var EMPTY_STRING = "";
+var TYPE_COMMENT = "comment";
+var TYPE_DECLARATION = "declaration";
+function index(style, options) {
+  if (typeof style !== "string") {
+    throw new TypeError("First argument must be a string");
+  }
+  if (!style) return [];
+  options = options || {};
+  var lineno = 1;
+  var column = 1;
+  function updatePosition(str) {
+    var lines = str.match(NEWLINE_REGEX);
+    if (lines) lineno += lines.length;
+    var i2 = str.lastIndexOf(NEWLINE);
+    column = ~i2 ? str.length - i2 : column + str.length;
+  }
+  function position3() {
+    var start2 = { line: lineno, column };
+    return function(node) {
+      node.position = new Position(start2);
+      whitespace2();
+      return node;
+    };
+  }
+  function Position(start2) {
+    this.start = start2;
+    this.end = { line: lineno, column };
+    this.source = options.source;
+  }
+  Position.prototype.content = style;
+  function error(msg) {
+    var err = new Error(
+      options.source + ":" + lineno + ":" + column + ": " + msg
+    );
+    err.reason = msg;
+    err.filename = options.source;
+    err.line = lineno;
+    err.column = column;
+    err.source = style;
+    if (options.silent) ;
+    else {
+      throw err;
+    }
+  }
+  function match(re2) {
+    var m2 = re2.exec(style);
+    if (!m2) return;
+    var str = m2[0];
+    updatePosition(str);
+    style = style.slice(str.length);
+    return m2;
+  }
+  function whitespace2() {
+    match(WHITESPACE_REGEX);
+  }
+  function comments(rules) {
+    var c2;
+    while (c2 = comment()) {
+      rules.push(c2);
+    }
+    return rules;
+  }
+  function comment() {
+    var pos = position3();
+    if (FORWARD_SLASH != style.charAt(0) || ASTERISK != style.charAt(1)) return;
+    var i2 = 2;
+    while (EMPTY_STRING != style.charAt(i2) && (ASTERISK != style.charAt(i2) || FORWARD_SLASH != style.charAt(i2 + 1))) {
+      ++i2;
+    }
+    i2 += 2;
+    if (EMPTY_STRING === style.charAt(i2 - 1)) {
+      return error("End of comment missing");
+    }
+    var str = style.slice(2, i2 - 2);
+    column += 2;
+    updatePosition(str);
+    style = style.slice(i2);
+    column += 2;
+    return pos({
+      type: TYPE_COMMENT,
+      comment: str
+    });
+  }
+  function declaration() {
+    var pos = position3();
+    var prop = match(PROPERTY_REGEX);
+    if (!prop) return;
+    comment();
+    if (!match(COLON_REGEX)) return error("property missing ':'");
+    var val = match(VALUE_REGEX);
+    var ret = pos({
+      type: TYPE_DECLARATION,
+      property: prop[0].replace(COMMENT_REGEX, EMPTY_STRING).trim(),
+      value: val ? val[0].replace(COMMENT_REGEX, EMPTY_STRING).trim() : EMPTY_STRING
+    });
+    match(SEMICOLON_REGEX);
+    return ret;
+  }
+  function declarations() {
+    var decls = [];
+    comments(decls);
+    var decl;
+    while (decl = declaration()) {
+      decls.push(decl);
+      comments(decls);
+    }
+    return decls;
+  }
+  whitespace2();
+  return declarations();
+}
+
+// node_modules/hast-util-to-jsx-runtime/node_modules/style-to-object/esm/index.mjs
+function StyleToObject(style, iterator) {
+  let styleObject = null;
+  if (!style || typeof style !== "string") return styleObject;
+  const declarations = index(style);
+  const hasIterator = typeof iterator === "function";
+  declarations.forEach((declaration) => {
+    if (declaration.type !== "declaration") return;
+    const { property, value } = declaration;
+    if (hasIterator) iterator(property, value, declaration);
+    else if (value) {
+      styleObject = styleObject ?? {};
+      styleObject[property] = value;
+    }
+  });
+  return styleObject;
+}
 var pointStart = point("start");
 function point(type) {
   return point3;
@@ -1757,12 +1638,12 @@ function stringifyPosition(value) {
   return "";
 }
 function point2(point3) {
-  return index(point3 && point3.line) + ":" + index(point3 && point3.column);
+  return index2(point3 && point3.line) + ":" + index2(point3 && point3.column);
 }
 function position2(pos) {
   return point2(pos && pos.start) + "-" + point2(pos && pos.end);
 }
-function index(value) {
+function index2(value) {
   return value && typeof value === "number" ? value : 1;
 }
 
@@ -1854,12 +1735,12 @@ var VFileMessage = class extends Error {
       options.cause = causeOrReason;
     }
     if (!options.ruleId && !options.source && typeof origin === "string") {
-      const index2 = origin.indexOf(":");
-      if (index2 === -1) {
+      const index3 = origin.indexOf(":");
+      if (index3 === -1) {
         options.ruleId = origin;
       } else {
-        options.source = origin.slice(0, index2);
-        options.ruleId = origin.slice(index2 + 1);
+        options.source = origin.slice(0, index3);
+        options.ruleId = origin.slice(index3 + 1);
       }
     }
     if (!options.place && options.ancestors && options.ancestors) {
@@ -1906,6 +1787,7 @@ VFileMessage.prototype.source = void 0;
 var own2 = {}.hasOwnProperty;
 var emptyMap = /* @__PURE__ */ new Map();
 var cap2 = /[A-Z]/g;
+var dashLetter = /-([a-z])/g;
 var tableElements = /* @__PURE__ */ new Set(["table", "tbody", "thead", "tfoot", "tr"]);
 var tableCellElement = /* @__PURE__ */ new Set(["td", "th"]);
 var docs = "https://github.com/syntax-tree/hast-util-to-jsx-runtime";
@@ -2131,7 +2013,7 @@ function createJsxElementProps(state, node) {
         crashEstree(state, node.position);
       }
     } else {
-      const name2 = attribute.name;
+      const { name: name2 } = attribute;
       let value;
       if (attribute.value && typeof attribute.value === "object") {
         if (attribute.value.data && attribute.value.data.estree && state.evaluater) {
@@ -2153,10 +2035,10 @@ function createJsxElementProps(state, node) {
 }
 function createChildren(state, node) {
   const children = [];
-  let index2 = -1;
+  let index3 = -1;
   const countsByName = state.passKeys ? /* @__PURE__ */ new Map() : emptyMap;
-  while (++index2 < node.children.length) {
-    const child = node.children[index2];
+  while (++index3 < node.children.length) {
+    const child = node.children[index3];
     let key;
     if (state.passKeys) {
       const name2 = child.type === "element" ? child.tagName : child.type === "mdxJsxFlowElement" || child.type === "mdxJsxTextElement" ? child.name : void 0;
@@ -2172,18 +2054,15 @@ function createChildren(state, node) {
   return children;
 }
 function createProperty(state, prop, value) {
-  const info = find(state.schema, prop);
   if (value === null || value === void 0 || typeof value === "number" && Number.isNaN(value)) {
     return;
   }
+  const info = find(state.schema, prop);
   if (Array.isArray(value)) {
     value = info.commaSeparated ? stringify(value) : stringify2(value);
   }
   if (info.property === "style") {
-    let styleObject = typeof value === "object" ? value : parseStyle(state, String(value));
-    if (state.stylePropertyNameCase === "css") {
-      styleObject = transformStylesToCssCasing(styleObject);
-    }
+    const styleObject = typeof value === "object" ? state.stylePropertyNameCase === "dom" ? value : transformStylesToCssCasing(value) : parseStyle(state, String(value));
     return ["style", styleObject];
   }
   return [
@@ -2192,8 +2071,21 @@ function createProperty(state, prop, value) {
   ];
 }
 function parseStyle(state, value) {
+  const result = {};
   try {
-    return (0, import_style_to_js.default)(value, { reactCompat: true });
+    StyleToObject(value, function(property, value2) {
+      if (property && value2) {
+        let name2 = property;
+        if (name2.slice(0, 2) !== "--") {
+          name2 = name2.toLowerCase();
+          if (state.stylePropertyNameCase === "dom") {
+            if (name2.slice(0, 4) === "-ms-") name2 = name2.slice(1);
+            name2 = name2.replace(dashLetter, toCamel);
+          }
+        }
+        result[name2] = value2;
+      }
+    });
   } catch (error) {
     if (state.ignoreInvalidStyle) {
       return {};
@@ -2212,6 +2104,7 @@ function parseStyle(state, value) {
     message.url = docs + "#cannot-parse-style-attribute";
     throw message;
   }
+  return result;
 }
 function findComponentFromName(state, name2, allowExpression) {
   let result;
@@ -2219,15 +2112,15 @@ function findComponentFromName(state, name2, allowExpression) {
     result = { type: "Literal", value: name2 };
   } else if (name2.includes(".")) {
     const identifiers = name2.split(".");
-    let index2 = -1;
+    let index3 = -1;
     let node;
-    while (++index2 < identifiers.length) {
-      const prop = name(identifiers[index2]) ? { type: "Identifier", name: identifiers[index2] } : { type: "Literal", value: identifiers[index2] };
+    while (++index3 < identifiers.length) {
+      const prop = name(identifiers[index3]) ? { type: "Identifier", name: identifiers[index3] } : { type: "Literal", value: identifiers[index3] };
       node = node ? {
         type: "MemberExpression",
         object: node,
         property: prop,
-        computed: Boolean(index2 && prop.type === "Literal"),
+        computed: Boolean(index3 && prop.type === "Literal"),
         optional: false
       } : prop;
     }
@@ -2272,12 +2165,16 @@ function transformStylesToCssCasing(domCasing) {
   return cssCasing;
 }
 function transformStyleToCssCasing(from) {
+  if (from.slice(0, 2) === "--") return from;
   let to = from.replace(cap2, toDash);
   if (to.slice(0, 3) === "ms-") to = "-" + to;
   return to;
 }
 function toDash($0) {
   return "-" + $0.toLowerCase();
+}
+function toCamel(_2, $1) {
+  return $1.toUpperCase();
 }
 
 // node_modules/@quartz-community/utils/dist/jsx.js
