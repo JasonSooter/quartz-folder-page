@@ -71,7 +71,7 @@
     "@types/node": "^26.0.0",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@typescript-eslint/parser": "^7.18.0",
-    "eslint": "^8.57.0",
+    "eslint": "^10.0.0",
     "eslint-config-prettier": "^9.1.0",
     "github-slugger": "^2.0.0",
     "hast-util-to-jsx-runtime": "^2.3.6",
